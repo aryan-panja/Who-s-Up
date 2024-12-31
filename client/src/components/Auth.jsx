@@ -123,6 +123,7 @@ export const Auth = () => {
             const reader = new FileReader()
             reader.onloadend = () => {
                 setProfilePic(reader.result)
+                console.log(reader);
             }
             reader.readAsDataURL(file)
         }

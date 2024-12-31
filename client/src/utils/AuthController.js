@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 
 const URL = import.meta.env.VITE_URL;
