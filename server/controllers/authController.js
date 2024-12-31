@@ -44,11 +44,14 @@ exports.signup = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      'INSERT INTO users (username, email, password, profile_pic) VALUES ($1, $2, $3, $4) RETURNING *',
+      'INSERT INTO users (username, email, password, profile_pic, latest_login) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP) RETURNING *',
       [username, email, hashedPassword, profile_pic || null]
     );
 
-    res.status(201).json({ message: 'User registered successfully', user: result.rows[0] });
+    const user = result.rows[0];
+    const token = generateToken(user.user_id);
+
+    res.status(201).json({ message: 'User registered successfully', user: user, token: token });
   } catch (error) {
     res.status(500).json({ message: 'Error registering user', error: error.message });
   }
@@ -74,7 +77,7 @@ exports.login = async (req, res) => {
     const token = generateToken(user.user_id);
     await pool.query('UPDATE users SET latest_login = CURRENT_TIMESTAMP WHERE user_id = $1', [user.user_id]);
 
-    res.status(200).json({ message: 'Login successful' }, {user: user, token});
+    res.status(200).json({ message: 'Login successful', user: user, token: token});
   } catch (error) {
     res.status(500).json({ message: 'Error logging in', error: error.message });
   }

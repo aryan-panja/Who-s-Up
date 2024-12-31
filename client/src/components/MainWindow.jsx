@@ -7,7 +7,6 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { AlignJustifyIcon } from 'lucide-react'
-import { use } from 'react'
 
 export const MainWindow = () => {
 
@@ -215,7 +214,7 @@ export const MainWindow = () => {
     ];
     
 
-    const width = window.innerWidth;
+    const width = window.outerWidth;
     const contactsWidth = width - (70 / 100) * width;
     const messagesWidth = width - contactsWidth;
 
@@ -243,7 +242,7 @@ export const MainWindow = () => {
                 >
                     <ResizablePanel 
                         defaultSize={contactsWidth}
-                        className='shadow-sm shadow-black'
+                        className=''
                     >
 
                         <ContactsSection
@@ -254,7 +253,7 @@ export const MainWindow = () => {
                         />
 
                     </ResizablePanel>
-                    <ResizableHandle className={'w-0'} />
+                    <ResizableHandle className={'w-2 bg-transparent active:bg-[#98989871] hover:bg-[#98989871] shadow-sm shadow-r-black'} />
 
                     <ResizablePanel defaultSize={messagesWidth}>
 

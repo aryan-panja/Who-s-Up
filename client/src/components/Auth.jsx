@@ -7,21 +7,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LockIcon } from 'lucide-react'
-import { CheckUniqueEmail, CheckUniqueUsername, SignUp } from '@/utils/AuthController'
+import { CheckUniqueEmail, CheckUniqueUsername, Login, SignUp } from '@/utils/AuthController'
 import { useNavigate } from 'react-router'
+import { useAuth } from '@/context/AuthContext'
 
 export const Auth = () => {
 
     const navigate = useNavigate();
 
+    const {login} = useAuth();
+
+    // Signup form state
     const [profilePic, setProfilePic] = useState(null)
     const [signUpEmail, setSignUpEmail] = useState('')
     const [signUpUsername, setSignUpUsername] = useState('')
     const [signUpPassword, setSignUpPassword] = useState('')
 
+    // Login form state
+    const [loginEmail, setLoginEmail] = useState('')
+    const [loginPassword, setLoginPassword] = useState('')
+
     // checking if the signup email & signup username is valid or not
-    const [emailValid, setEmailValid] = useState(null);
-    const [usernameValid, setUsernameValid] = useState(null);
+    const [signUpEmailValid, setSignUpEmailValid] = useState(null);
+    const [signUpUsernameValid, setSignUpUsernameValid] = useState(null);
 
     // Error messages for email and username
     const [emailError, setEmailError] = useState('');
@@ -29,17 +37,39 @@ export const Auth = () => {
 
     // Loading state
     const [signupLoading, setSignupLoading] = useState(false);
+    const [loginLoading, setLoginLoading] = useState(false);
 
+    // Email validation
+    const validEmail = (email) => {
+        const re = /\S+@\S+\.\S+/;
+        return re.test(email);
+    }
+
+    // Username validation (only numbers, small letters and underscores accepted and we will apply @ from our side)
+    const validUsername = (username) => {
+        const re = /^[a-z0-9_]+$/;
+        return re.test(username);
+    }
 
     // Checking the uniqueness of email
     const checkEmail = async (email) => {
-        if (email === '') return;
+        if (email === '') {
+            setSignUpEmailValid(false);
+            setEmailError('');
+            // setEmailError('Email cannot be empty');
+            return;
+        }
+        if (!validEmail(email)) {
+            setSignUpEmailValid(false);
+            setEmailError('Enter valid Email');
+            return;
+        }
         const response = await CheckUniqueEmail(email);
         if (response && response.status === 200) {
-            setEmailValid(true);
+            setSignUpEmailValid(true);
             setEmailError('');
         } else {
-            setEmailValid(false);
+            setSignUpEmailValid(false);
             setEmailError('Email is already taken');
         }
         console.log(response);
@@ -55,13 +85,24 @@ export const Auth = () => {
 
     // Checking the uniqueness of username
     const checkUserName = async (username) => {
-        if (username === '') return;
-        const response = await CheckUniqueUsername(username);
+        if (username === '') {
+            setSignUpUsernameValid(false);
+            setUsernameError('');
+            // setUsernameError('Username cannot be empty');
+            return;
+        }
+        if (!validUsername(username)) {
+            setSignUpUsernameValid(false);
+            setUsernameError('Enter valid Username. Only include small letters, numbers and underscores no @');
+            return;
+        }
+        console.log('@' + username);
+        const response = await CheckUniqueUsername('@' + username);
         if (response && response.status === 200) {
-            setUsernameValid(true);
+            setSignUpUsernameValid(true);
             setUsernameError('');
         } else {
-            setUsernameValid(false);
+            setSignUpUsernameValid(false);
             setUsernameError('Username is already taken');
         }
         console.log(response);
@@ -91,22 +132,55 @@ export const Auth = () => {
     const handleSignUp = async (e) => {
         setSignupLoading(true);
         e.preventDefault();
-        if (emailValid && usernameValid) {
-            const response = await SignUp({
-                username: signUpUsername,
-                email: signUpEmail,
-                password: signUpPassword,
-                profile_pic: profilePic || null
-            });
-            console.log(response);
-
-            navigate('/');
+        if (signUpEmailValid && signUpUsernameValid) {
+            try {
+                const response = await SignUp({
+                    username: '@' + signUpUsername,
+                    email: signUpEmail,
+                    password: signUpPassword,
+                    profile_pic: profilePic || null
+                });
+                login(response.data);
+                console.log(response);
+                setTimeout(() => {
+                    navigate('/');
+                    setSignupLoading(false);
+                }, 2000);
+            }
+            catch (error) {
+                console.log('signup error', error);
+            }
 
         } else {
-            console.log('Email and Username are not valid');
+            alert('Email and Username are not valid');
+            setSignupLoading(false);
         }
 
-        setSignupLoading(false);
+    }
+
+    // Handle Login form submission
+    const handleLogin = async (e) => {
+        setLoginLoading(true);
+        e.preventDefault();
+        if (validEmail(loginEmail)) {
+            try{
+                const response = await Login(loginEmail, loginPassword);
+                login(response.data);
+                console.log(response);
+                setTimeout(() => {
+                    navigate('/');
+                    setLoginLoading(false);
+                }, 2000);
+            }
+            catch(error){
+                console.log('login error', error);
+            }
+
+        } else {
+            alert('Email and Password are not valid');
+            setLoginLoading(false);
+        }
+
     }
 
     return (
@@ -129,11 +203,11 @@ export const Auth = () => {
                             <form className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="email-login">Email</Label>
-                                    <Input id="email-login" type="email" placeholder="m@example.com" required />
+                                    <Input id="email-login" type="email" placeholder="m@example.com" required value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="password-login">Password</Label>
-                                    <Input id="password-login" type="password" required />
+                                    <Input id="password-login" type="password" required value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} />
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <Checkbox id="stay-logged-in" />
@@ -144,8 +218,10 @@ export const Auth = () => {
                                         Stay logged in on this browser
                                     </label>
                                 </div>
-                                <Button type="submit" className="w-full bg-[#25D366] hover:bg-[#1ea952]">
-                                    Login
+                                <Button type="submit" className="w-full bg-[#25D366] hover:bg-[#1ea952]" onClick={handleLogin}>
+                                    {
+                                        loginLoading ? 'Entering...' : 'Log In'
+                                    }
                                 </Button>
                             </form>
                         </TabsContent>
@@ -170,36 +246,39 @@ export const Auth = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="username">Username</Label>
-                                    <Input 
-                                        id="username" 
-                                        required 
-                                        value={signUpUsername} 
-                                        onChange={(e) => setSignUpUsername(e.target.value)} 
+                                <div className="space-y-2 text-md">
+                                    <Label htmlFor="username">
+                                        Username
+                                    </Label>
+                                    <Input
+                                        id="username"
+                                        placeholder="dank_hero"
+                                        required
+                                        value={signUpUsername}
+                                        onChange={(e) => setSignUpUsername(e.target.value)}
                                     />
                                     {usernameError && <p className="text-red-500 text-sm">{usernameError}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Email</Label>
-                                    <Input 
-                                        id="email" 
-                                        type="email" 
-                                        placeholder="m@example.com" 
-                                        required 
-                                        value={signUpEmail} 
-                                        onChange={(e) => setSignUpEmail(e.target.value)} 
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        placeholder="m@example.com"
+                                        required
+                                        value={signUpEmail}
+                                        onChange={(e) => setSignUpEmail(e.target.value)}
                                     />
                                     {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="password">Password</Label>
-                                    <Input 
-                                        id="password" 
-                                        type="password" 
-                                        required 
-                                        value={signUpPassword} 
-                                        onChange={(e) => setSignUpPassword(e.target.value)} 
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        required
+                                        value={signUpPassword}
+                                        onChange={(e) => setSignUpPassword(e.target.value)}
                                     />
                                 </div>
                                 <Button type="submit" className="w-full bg-[#25D366] hover:bg-[#1ea952]" onClick={handleSignUp}>
