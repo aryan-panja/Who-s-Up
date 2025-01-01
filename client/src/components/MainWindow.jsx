@@ -13,208 +13,14 @@ export const MainWindow = () => {
 
     const {logout} = useAuth();
 
+    
     const [userSelected, setUserSelected] = useState(null);
-    const [globalSearch, setGlobalSearch] = useState('');
+    
 
     // Selecting the user
     useEffect(() => {
         console.log(userSelected)
     }, [userSelected])
-
-    // Searching the user globally from database
-    useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-            if (globalSearch !== '') {
-                console.log(globalSearch);
-            }// Update search query only after delay
-        }, 1000);
-
-        return () => clearTimeout(delayDebounceFn); // Cleanup timeout on component unmount or value change
-    }, [globalSearch]);
-
-    // make 20 more contacts data
-    const contacts = [
-        {
-            id: 1,
-            name: 'Barclays Interviews || 2026 Batch',
-            message: '~Akshit Bansal: https://forms.gle/jVWd7XAcBPfk6nTd7',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 2,
-            name: 'Class Notes',
-            message: 'Garv Kakas: Dear students, Your ML EST answer sheets will be...',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 3,
-            name: '3Q12(Prev. 3CS2🥺💔)',
-            message: 'You: MI ke kaha dikhayenge?',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 4,
-            name: 'Apoorva',
-            message: 'You reacted ❤️ to "12.55 ki train"',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 5,
-            name: 'Amandeep Singh GDSC CORE',
-            message: 'You reacted ❤️ to "Done"',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 6,
-            name: 'GDSC Announcement 24-25',
-            message: 'Marul Bhardwaj / TAAS Team reacted 👍 to "There will be a...',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 7,
-            name: 'GDSC Unofficial 24-25',
-            message: 'Amandeep Singh: If someone is not able to attend send the...',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 8,
-            name: '+91 6239 538 468',
-            message: 'Ok',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 9,
-            name: 'Reyan Singh GDSC CORE',
-            message: 'Ok',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 10,
-            name: 'Thapar Recruitment Updates',
-            message: 'Aastha Sharma: Shortlisted candidates for Infosys will be...',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 11,
-            name: 'Family Group 👨‍👩‍👧‍👦',
-            message: 'Mom: Beta, dinner ready hai.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 12,
-            name: 'Thapar Coding Club 2024',
-            message: 'Aditya Khanna: The hackathon schedule is finalized...',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 13,
-            name: 'Fitness Buddies 🏋️‍♂️',
-            message: 'Ravi: Morning run kal miss mat karna.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 14,
-            name: 'Book Club 📚',
-            message: 'Priya: Next book discussion is on Monday.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 15,
-            name: 'Internship Seekers 2026',
-            message: 'You: Does anyone have the HR contact for Amazon?',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 16,
-            name: 'Crypto Investors 💰',
-            message: 'Aryan Gupta: Bitcoin just hit a new high!',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 17,
-            name: 'Roommates 3Q15 🏠',
-            message: 'You: Rent bhej diya?',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 18,
-            name: 'Cultural Fest Team 2024',
-            message: 'Riya: The decoration budget has been approved!',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 19,
-            name: 'Thapar Canteen Lovers',
-            message: 'Rohan: Chhole bhature kal try karte hain.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 20,
-            name: 'DSA Warriors 🛡️',
-            message: 'Vikram: Today’s session on graphs was awesome!',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 21,
-            name: 'Music Jamming 🎵',
-            message: 'Sneha: Let’s meet at 6 pm for practice.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 22,
-            name: 'Gaming Clan 🎮',
-            message: 'You: Anyone for Valorant tonight?',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 23,
-            name: 'Photography Club 📷',
-            message: 'Kunal: Submit your best shots by Sunday.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 24,
-            name: 'Final Year Project Team',
-            message: 'Aditi: The prototype demo went well.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 25,
-            name: 'Corporate Connect 2024',
-            message: 'Manish Sharma: There’s a webinar tomorrow at 5 pm.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 26,
-            name: 'Netflix Watch Party 🎬',
-            message: 'Simran: Let’s watch the next episode tonight.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 27,
-            name: 'Startup Enthusiasts 🚀',
-            message: 'You: The pitch deck is almost ready!',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 28,
-            name: 'Thapar Cricket Team 🏏',
-            message: 'Coach: Practice is rescheduled to 7 am.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 29,
-            name: 'Mock Placement Drives',
-            message: 'Hriday: Next session is on 2nd Jan.',
-            img: '/placeholder.svg'
-        },
-        {
-            id: 30,
-            name: 'Birthday Bash 🎉',
-            message: 'Raj: Party starts at 8 pm sharp!',
-            img: '/placeholder.svg'
-        }
-    ];
 
 
     const width = 100;
@@ -256,10 +62,8 @@ export const MainWindow = () => {
                     >
 
                         <ContactsSection
-                            contacts={contacts}
                             userSelected={userSelected}
                             setUserSelected={setUserSelected}
-                            setGlobalSearch={setGlobalSearch}
                         />
 
                     </ResizablePanel>

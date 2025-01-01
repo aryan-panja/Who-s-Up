@@ -1,35 +1,73 @@
-import React, { useState } from 'react'
-import { cn } from '@/lib/utils'
-import avatar from '@/assets/avatar.png'
+import React, { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
+import avatar from '@/assets/avatar.png';
 import { XIcon } from 'lucide-react';
+import { findUser, userContacts } from '@/utils/ContactsController';
 
-export const ContactsSection = ({ contacts, userSelected, setUserSelected, setGlobalSearch }) => {
+export const ContactsSection = ({ userSelected, setUserSelected }) => {
 
+    const [usersContacts, setUsersContacts] = useState([]);
     const [search, setSearch] = useState('');
+    const [globalSearch, setGlobalSearch] = useState('');
     const [searchRegion, setSearchRegion] = useState(0);
 
-    if (searchRegion === 0) {
-        contacts = contacts.filter(contact => contact.name.toLowerCase().includes(search.toLowerCase()))
+    // getting user's contacts
+    const getUsersContacts = async () => {
+        const response = await userContacts();
+        if (!response) return;
+        console.log(response.data.contacts);
+        setUsersContacts(response.data.contacts);
     }
-    else if (searchRegion === 1) {
-        setGlobalSearch(search);
-    }
+
+    useEffect(() => {
+        getUsersContacts();
+
+    }, [])
+
+    // Searching the user globally from the database
+    const findUserGlobally = async (username) => {
+        const response = await findUser(username);
+        if (!response) return;
+        console.log(response);
+        // contacts = response.data.contacts;
+        setUsersContacts(response.data.contacts);
+    };
+
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            if (globalSearch !== '') {
+                console.log(globalSearch);
+                findUserGlobally(globalSearch);
+            }
+            else{
+                getUsersContacts();
+            }
+        }, 1000);
+
+        return () => clearTimeout(delayDebounceFn); // Cleanup timeout on component unmount or value change
+    }, [globalSearch]);
+
+
+    useEffect(() => {
+        // Update searchRegion only if searchRegion value changes
+        if (searchRegion === 1 && search !== globalSearch) {
+            setGlobalSearch(search);
+        }
+    }, [search, searchRegion]);
+
+    // Filter contacts based on searchRegion
+    const filteredContacts = searchRegion === 0
+        ? usersContacts.filter(contact => contact.username.toLowerCase().includes(search.toLowerCase()))
+        : usersContacts;
 
     return (
         <div className='h-full '>
-
             <div className='py-8 flex flex-col gap-4 max-h-screen min-h-screen'>
-
                 <div className='flex flex-col space-y-4 mx-6'>
-
                     <div className='flex justify-between items-center'>
-
-                        <h1 className='text-white text-xl font-bold'>
-                            Chats
-                        </h1>
+                        <h1 className='text-white text-xl font-bold'>Chats</h1>
 
                         <div className='flex justify-center items-center gap-4 text-white text-sm font-semibold'>
-
                             <button
                                 className={`${searchRegion === 0 ? 'border-[#1BB565]' : 'border-transparent'} border-b-2`}
                                 onClick={() => setSearchRegion(0)}
@@ -43,9 +81,7 @@ export const ContactsSection = ({ contacts, userSelected, setUserSelected, setGl
                             >
                                 Global
                             </button>
-
                         </div>
-
                     </div>
 
                     <div className="w-full flex justify-center items-center relative group">
@@ -66,29 +102,26 @@ export const ContactsSection = ({ contacts, userSelected, setUserSelected, setGl
                             />
                         )}
                     </div>
-
                 </div>
 
                 <div className='overflow-y-auto mx-6 mr-1'>
                     {
-                        contacts.map((contact) => (
+                        filteredContacts.map((contact) => (
                             <ContactCards
-                                className={`${contact.id === userSelected ? 'bg-[#383838]' : ''}`}
-                                key={contact.id}
-                                heading={contact.name}
-                                message={contact.message}
-                                img={contact.img}
-                                onClick={() => setUserSelected(contact.id)}
+                                className={`${contact.user_id === userSelected ? 'bg-[#383838]' : ''}`}
+                                key={contact.user_id}
+                                heading={contact.username}
+                                message='Hello'
+                                img={contact.profile_pic}
+                                onClick={() => setUserSelected(contact.user_id)}
                             />
                         ))
                     }
                 </div>
-
             </div>
         </div>
-    )
-}
-
+    );
+};
 
 const ContactCards = ({ heading, message, className, img, ...props }) => {
     return (
@@ -102,27 +135,11 @@ const ContactCards = ({ heading, message, className, img, ...props }) => {
                     backgroundSize: 'cover',
                     backgroundRepeat: 'no-repeat',
                 }}
-            >
-                {/* <img
-                    className="rounded-full object-cover bg-center"
-                    src={avatar}
-                    alt={heading}
-                    width={50}
-                    height={50}
-                    style={{
-                        width: "50px",
-                        height: "50px",
-                        back``
-                    }}
-                /> */}
-            </div>
-
-            <div className='flex flex-col justify-center  w-[calc(100%-60px)]'>
-
+            ></div>
+            <div className='flex flex-col justify-center w-[calc(100%-60px)]'>
                 <h1 className='text-white text-md font-semibold'>
                     {heading}
                 </h1>
-
                 <div
                     className='text-[#e4e4e4d3] text-sm'
                     style={{
@@ -134,9 +151,7 @@ const ContactCards = ({ heading, message, className, img, ...props }) => {
                 >
                     {message}
                 </div>
-
             </div>
-
         </div>
-    )
-}
+    );
+};

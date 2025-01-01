@@ -1,8 +1,6 @@
-import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 
 const URL = import.meta.env.VITE_URL;
-console.log(URL);
 
 // SignUp
 export const SignUp = async (userDetails) => {

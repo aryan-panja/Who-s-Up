@@ -48,6 +48,10 @@ exports.signup = async (req, res) => {
       [username, email, hashedPassword, profile_pic || null]
     );
 
+    const generateFirstContact = await pool.query(
+      'INSERT INTO contacts (user1_id, user2_id) VALUES ($1, $1)', [result.rows[0].user_id]
+    );
+
     const user = result.rows[0];
     const token = generateToken(user.user_id);
 
